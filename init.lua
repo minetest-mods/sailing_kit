@@ -412,7 +412,7 @@ end,
 	
 })
 
-minetest.register_on_chat_message(
+--[[minetest.register_on_chat_message(
 	function(name, message)
 		if message == 'doit' then
 --			local plyr = minetest.get_player_by_name('singleplayer')
@@ -422,4 +422,4 @@ minetest.register_on_chat_message(
 			minetest.chat_send_all(minetest.get_biome_name(minetest.get_biome_data(pos).biome))
 		end
 	end
-)
+)]]--
