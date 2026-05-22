@@ -16,7 +16,7 @@ local LATER_DRAG_FACTOR = 2.0
 local ROLL_RATE = rad(2)
 local ROLL_FACTOR = 0.1
 
-local modpath = minetest.get_modpath("sailing_kit")
+local modpath = core.get_modpath("sailing_kit")
 dofile(modpath .. "/regstuff.lua")
 local get_wind = dofile(modpath .. "/wind.lua")
 
@@ -36,13 +36,13 @@ local boat_activation = function(self)
 	self.sheet_limit = 90
 	self.rudder_angle = 0
 	local pos = self.object:get_pos()
-	local mast = minetest.add_entity(pos, "sailing_kit:mast")
-	local sail = minetest.add_entity(pos, "sailing_kit:sail")
+	local mast = core.add_entity(pos, "sailing_kit:mast")
+	local sail = core.add_entity(pos, "sailing_kit:sail")
 	local sailcolor = mobkit.recall(self, "sailcolor")
 	if sailcolor then
 		sail:set_properties({ textures = { "sail.png^[multiply:" .. sailcolor } })
 	end
-	local rudder = minetest.add_entity(pos, "sailing_kit:rudder")
+	local rudder = core.add_entity(pos, "sailing_kit:rudder")
 	mast:set_attach(self.object, "", { x = 0, y = 8, z = 4 }, { x = 0, y = 0, z = 0 })
 	sail:set_attach(mast, "", { x = 0, y = 0, z = 0 }, { x = 0, y = 0, z = 0 })
 	rudder:set_attach(self.object, "", { x = 0, y = 0, z = -26 }, { x = 0, y = 0, z = 0 })
@@ -50,7 +50,7 @@ local boat_activation = function(self)
 	self.sail = sail
 	self.rudder = rudder
 	self.sail_set = false
-	self.sail_timer = minetest.get_us_time()
+	self.sail_timer = core.get_us_time()
 end
 
 local destroy = function(self)
@@ -67,10 +67,10 @@ local destroy = function(self)
 	self.object:remove()
 	pos.y = pos.y + 2
 	for _ = 1, 3 do
-		minetest.add_item({ x = pos.x + random() - 0.5, y = pos.y, z = pos.z + random() - 0.5 }, "default:wood")
+		core.add_item({ x = pos.x + random() - 0.5, y = pos.y, z = pos.z + random() - 0.5 }, "default:wood")
 	end
 	for _ = 1, 9 do
-		minetest.add_item({ x = pos.x + random() - 0.5, y = pos.y, z = pos.z + random() - 0.5 }, "farming:string")
+		core.add_item({ x = pos.x + random() - 0.5, y = pos.y, z = pos.z + random() - 0.5 }, "farming:string")
 	end
 end
 
@@ -99,7 +99,7 @@ local sailstep = function(self)
 		local roll = rotation.z
 		local newroll
 
-		local hdir = minetest.yaw_to_dir(yaw) -- hull direction unit vector
+		local hdir = core.yaw_to_dir(yaw) -- hull direction unit vector
 		local nhdir = { x = hdir.z, y = 0, z = -hdir.x } -- lateral unit vector
 
 		local longit_speed = dot(vel, hdir)
@@ -114,7 +114,7 @@ local sailstep = function(self)
 
 		-- player control
 		if self.driver then
-			local plyr = minetest.get_player_by_name(self.driver)
+			local plyr = core.get_player_by_name(self.driver)
 			if plyr then
 				local ctrl = plyr:get_player_control()
 				-- sail
@@ -137,8 +137,8 @@ local sailstep = function(self)
 					end
 				end
 
-				if ctrl.jump and minetest.get_us_time() > self.sail_timer + 500000 then
-					self.sail_timer = minetest.get_us_time()
+				if ctrl.jump and core.get_us_time() > self.sail_timer + 500000 then
+					self.sail_timer = core.get_us_time()
 					if self.sail_set then
 						self.sail_set = false
 						self.sail:set_properties({ is_visible = false })
@@ -177,7 +177,7 @@ local sailstep = function(self)
 			-- get sail direction
 			--			local _,_,spos,sailrot = self.mast:get_attach()
 			local syaw = yaw - rad(sailrot.y)
-			local sdir = minetest.yaw_to_dir(syaw)
+			local sdir = core.yaw_to_dir(syaw)
 			local snormal = { x = sdir.z, y = 0, z = -sdir.x } -- rightside, dot is negative
 			-- wind force on sail
 			local wsforce = dot(wind, snormal)
@@ -255,7 +255,7 @@ local paint_sail = function(self, puncher, _, toolcaps)
 			if indx then
 				local color = name:sub(indx + 1)
 				local colstr = colors[color]
-				-- minetest.chat_send_all(color ..' '.. dump(colstr))
+				-- core.chat_send_all(color ..' '.. dump(colstr))
 				if colstr then
 					self.sail:set_properties({ textures = { "sail.png^[multiply:" .. colstr } })
 					mobkit.remember(self, "sailcolor", colstr)
@@ -272,7 +272,7 @@ local paint_sail = function(self, puncher, _, toolcaps)
 	end
 end
 
-minetest.register_entity("sailing_kit:boat", {
+core.register_entity("sailing_kit:boat", {
 	--[[ initial_properties = {
 	physical = true,
 	collisionbox = {-0.6, -0.8, -0.6, 0.6, 0.9, 0.6},
@@ -300,7 +300,7 @@ minetest.register_entity("sailing_kit:boat", {
 			clicker:set_attach(self.object, "", { x = -3, y = 2, z = -21 }, { x = 0, y = 0, z = 0 })
 			clicker:set_eye_offset({ x = 0, y = 0, z = -20 }, { x = 0, y = 0, z = -5 })
 			player_api.player_attached[clicker:get_player_name()] = true
-			minetest.after(0.2, function()
+			core.after(0.2, function()
 				player_api.set_animation(clicker, "sit", 30)
 			end)
 			self.driver = clicker:get_player_name()
@@ -326,7 +326,7 @@ minetest.register_entity("sailing_kit:boat", {
 	on_punch = paint_sail,
 })
 
-minetest.register_entity("sailing_kit:mast", {
+core.register_entity("sailing_kit:mast", {
 	initial_properties = {
 		physical = true,
 		pointable = false,
@@ -336,7 +336,7 @@ minetest.register_entity("sailing_kit:mast", {
 	},
 
 	on_activate = function(self, std)
-		self.sdata = minetest.deserialize(std) or {}
+		self.sdata = core.deserialize(std) or {}
 		if self.sdata.remove then
 			self.object:remove()
 		end
@@ -344,11 +344,11 @@ minetest.register_entity("sailing_kit:mast", {
 
 	get_staticdata = function(self)
 		self.sdata.remove = true
-		return minetest.serialize(self.sdata)
+		return core.serialize(self.sdata)
 	end,
 })
 
-minetest.register_entity("sailing_kit:sail", {
+core.register_entity("sailing_kit:sail", {
 	initial_properties = {
 		physical = false,
 		collide_with_objects = false,
@@ -362,7 +362,7 @@ minetest.register_entity("sailing_kit:sail", {
 	},
 
 	on_activate = function(self, std)
-		self.sdata = minetest.deserialize(std) or {}
+		self.sdata = core.deserialize(std) or {}
 		if self.sdata.remove then
 			self.object:remove()
 		end
@@ -370,12 +370,12 @@ minetest.register_entity("sailing_kit:sail", {
 
 	get_staticdata = function(self)
 		self.sdata.remove = true
-		return minetest.serialize(self.sdata)
+		return core.serialize(self.sdata)
 	end,
 })
 
 --[[
-minetest.register_entity('sailing_kit:seat',{
+core.register_entity('sailing_kit:seat',{
 initial_properties = {
 	physical = true,
 	collisionbox = {-0.8, 0, -0.8, 0.8, 0.05, 0.8},
@@ -385,19 +385,19 @@ initial_properties = {
 	},
 
 on_activate = function(self,std)
-	self.sdata = minetest.deserialize(std) or {}
+	self.sdata = core.deserialize(std) or {}
 	if self.sdata.remove then self.object:remove() end
 end,
 
 get_staticdata=function(self)
 
   self.sdata.remove=true
-  return minetest.serialize(self.sdata)
+  return core.serialize(self.sdata)
 end,
 
 })	--]]
 
-minetest.register_entity("sailing_kit:rudder", {
+core.register_entity("sailing_kit:rudder", {
 	initial_properties = {
 		physical = false,
 		collide_with_objects = false,
@@ -408,7 +408,7 @@ minetest.register_entity("sailing_kit:rudder", {
 	},
 
 	on_activate = function(self, std)
-		self.sdata = minetest.deserialize(std) or {}
+		self.sdata = core.deserialize(std) or {}
 		if self.sdata.remove then
 			self.object:remove()
 		end
@@ -416,18 +416,18 @@ minetest.register_entity("sailing_kit:rudder", {
 
 	get_staticdata = function(self)
 		self.sdata.remove = true
-		return minetest.serialize(self.sdata)
+		return core.serialize(self.sdata)
 	end,
 })
 
---[[minetest.register_on_chat_message(
+--[[core.register_on_chat_message(
 	function(name, message)
 		if message == 'doit' then
---			local plyr = minetest.get_player_by_name('singleplayer')
-			local plyr = minetest.get_player_by_name(name)
+--			local plyr = core.get_player_by_name('singleplayer')
+			local plyr = core.get_player_by_name(name)
 			local pos = plyr:get_pos()
 			pos.y = pos.y-0.01
-			minetest.chat_send_all(minetest.get_biome_name(minetest.get_biome_data(pos).biome))
+			core.chat_send_all(core.get_biome_name(core.get_biome_data(pos).biome))
 		end
 	end
 )]]
