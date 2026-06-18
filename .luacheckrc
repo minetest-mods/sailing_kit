@@ -6,7 +6,5 @@ read_globals = {
 }
 
 globals = {
-    "wind",     -- FIXME
-
     "player_api.player_attached"
 }

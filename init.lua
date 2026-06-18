@@ -24,7 +24,7 @@ local ROLL_FACTOR = 0.1
 
 local modpath = minetest.get_modpath("sailing_kit")
 dofile(modpath .. "/regstuff.lua")
-dofile(modpath .. "/wind.lua")
+local get_wind = dofile(modpath .. "/wind.lua")
 
 local function dot(v1, v2)
 	return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z
@@ -36,10 +36,6 @@ end
 
 local function minmax(v, m)
 	return min(abs(v), m) * sign(v)
-end
-
-local function get_wind()
-	return wind.wind
 end
 
 local boat_activation = function(self, std)
