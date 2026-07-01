@@ -1,0 +1,40 @@
+name: build
+on: [push, pull_request]
+jobs:
+  luacheck:
+    # The latest luacheck release does not know the luanti std (06/2026)
+    # https://github.com/lunarmodules/luacheck/issues/121
+    # we need to build from git to use is
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@main
+        with:
+          path: sailing_kit
+      - name: install luarocks
+        run: sudo apt-get install luarocks
+      - name: download luacheck
+        uses: actions/checkout@master
+        with:
+          repository: lunarmodules/luacheck
+          path: luacheck
+      - name: build luacheck
+        run: |
+          cd luacheck
+          sudo luarocks make
+      - name: run luacheck
+        run: |
+          cd sailing_kit
+          luacheck .
+  stylua:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@main
+      - name: run stylua
+        uses: JohnnyMorganz/stylua-action@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          version: latest
+          args: --check .
+        
